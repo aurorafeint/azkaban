@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Properties;
 
 import javax.mail.Message;
+import javax.mail.PasswordAuthentication;
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Transport;
@@ -57,8 +58,18 @@ public class Mailman {
         props.put("mail.host", _mailHost);
         props.put("mail.user", _mailUser);
         props.put("mail.password", _mailPassword);
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.host", "smtp.gmail.com");
+        props.put("mail.smtp.port", "587");
 
-        Session session = Session.getDefaultInstance(props);
+//        Session session = Session.getDefaultInstance(props);
+        Session session = Session.getDefaultInstance(props,
+            new javax.mail.Authenticator() {
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(_mailUser,_mailPassword);
+                }
+            });
         Message message = new MimeMessage(session);
         InternetAddress from = new InternetAddress(fromAddress == null? "dolores.umbridge@azkaban.com" : fromAddress, false);
         message.setFrom(from);
@@ -80,6 +91,7 @@ public class Mailman {
             logger.warn("Error while sending email, invalid email: " + e.getMessage());
         } catch(MessagingException e) {
             logger.warn("Error while sending email: " + e.getMessage());
+			e.printStackTrace();
         }
     }
 
